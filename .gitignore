@@ -1,0 +1,15 @@
+# Dependências
+node_modules/
+
+# Gerado em runtime (não faz parte do código-fonte)
+deployment.json
+
+# Scripts e arquivos de geração automática
+gerar_roteiro.py
+gerar_relatorio.py
+
+# Lock files de editores
+.~lock.*
+
+# Ferramentas de desenvolvimento local
+.claude/
