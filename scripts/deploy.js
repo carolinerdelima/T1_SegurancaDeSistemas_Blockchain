@@ -1,5 +1,5 @@
 /**
- * deploy.js — Compila e faz o deploy do contrato EvidenceRegistry no Ganache local.
+ * deploy.js - Compila e faz o deploy do contrato EvidenceRegistry no Ganache local.
  *
  * Fluxo:
  *   1. Conecta ao nó Ethereum local (Ganache) via JSON-RPC
@@ -50,7 +50,7 @@ function compileContract() {
 
 async function main() {
     console.log('\n╔══════════════════════════════════════════╗');
-    console.log('║         DEPLOY — EvidenceRegistry        ║');
+    console.log('║         DEPLOY - EvidenceRegistry        ║');
     console.log('╚══════════════════════════════════════════╝\n');
 
     // Conecta ao Ganache (nó local Ethereum)
@@ -79,7 +79,7 @@ async function main() {
     console.log('Compilado com sucesso.');
 
     // ContractFactory recebe ABI + bytecode e assina o deploy com o signer
-    // A transação de deploy é uma transação Ethereum normal — assinada pela chave privada do signer
+    // A transação de deploy é uma transação Ethereum normal - assinada pela chave privada do signer
     const factory  = new ethers.ContractFactory(abi, bytecode, signer);
     const contract = await factory.deploy();
 

@@ -1,7 +1,7 @@
 {
   "name": "blockchain-evidence-registry",
   "version": "1.0.0",
-  "description": "Demonstração de blockchain para segurança de sistemas — cadeia de custódia de evidências digitais",
+  "description": "Demonstração de blockchain para segurança de sistemas - cadeia de custódia de evidências digitais",
   "main": "scripts/demo.js",
   "scripts": {
     "deploy": "node scripts/deploy.js",

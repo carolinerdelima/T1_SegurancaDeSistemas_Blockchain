@@ -1,4 +1,4 @@
-# Blockchain — Cadeia de Custódia de Evidências Digitais
+# Blockchain - Cadeia de Custódia de Evidências Digitais
 
 Projeto de demonstração prática para trabalho acadêmico de **Segurança de Sistemas**.  
 Usa Ganache (Ethereum local) + Solidity + ethers.js v6 para demonstrar:
@@ -7,7 +7,7 @@ Usa Ganache (Ethereum local) + Solidity + ethers.js v6 para demonstrar:
 |---|---|
 | **Hash criptográfico** | SHA-256 do conteúdo do arquivo (Node.js `crypto`) |
 | **Integridade de dados** | Hash armazenado on-chain vs. hash recalculado do arquivo |
-| **Assinatura digital** | `msg.sender` — endereço derivado da chave privada do assinante |
+| **Assinatura digital** | `msg.sender` - endereço derivado da chave privada do assinante |
 | **Não-repúdio** | Endereço do registrante gravado permanentemente no contrato |
 | **Imutabilidade** | Dados em blockchain não podem ser alterados após confirmação |
 | **Cadeia de custódia** | Hash + assinante + timestamp registrados atomicamente |
@@ -20,7 +20,7 @@ Usa Ganache (Ethereum local) + Solidity + ethers.js v6 para demonstrar:
 ├── contracts/
 │   └── EvidenceRegistry.sol   # Smart contract Solidity
 ├── scripts/
-│   ├── deploy.js              # Compila + faz deploy no Ganache
+│   ├── deploy.js              # Compila e faz deploy no Ganache
 │   └── demo.js                # Demonstração completa (5 etapas)
 ├── deployment.json            # Gerado pelo deploy (endereço + ABI)
 ├── package.json
@@ -31,7 +31,7 @@ Usa Ganache (Ethereum local) + Solidity + ethers.js v6 para demonstrar:
 
 ## Pré-requisitos
 
-### 1. Node.js (versão 18 ou superior) — OBRIGATÓRIO
+### 1. Node.js (versão 18 ou superior) - OBRIGATÓRIO
 
 ethers.js v6 requer Node.js 18+. Verifique sua versão:
 
@@ -65,7 +65,7 @@ sudo apt-get install -y build-essential python3
 ### 3. Ganache (blockchain Ethereum local)
 
 ```bash
-# Instalar globalmente (uma vez só)
+# Instalar globalmente
 npm install -g ganache
 
 # Verificar instalação
@@ -78,7 +78,7 @@ ganache --version
 
 ```bash
 # Entrar na pasta do projeto
-cd puc/seguranca
+cd T1_SegurancaDeSistemas_Blockchain
 
 # Instalar dependências Node.js (ethers.js + solc)
 npm install
@@ -90,7 +90,7 @@ npm install
 
 ## Execução
 
-### Passo 1 — Iniciar o Ganache (terminal separado)
+### Passo 1 - Iniciar o Ganache (terminal separado)
 
 ```bash
 ganache --deterministic
@@ -99,10 +99,9 @@ ganache --deterministic
 Deixe este terminal aberto. O Ganache cria automaticamente 10 contas com 1000 ETH cada  
 e expõe um nó Ethereum local em `http://127.0.0.1:8545`.
 
-A flag `--deterministic` garante que as contas e chaves privadas sejam sempre as mesmas  
-(útil para replicar resultados em apresentações).
+A flag `--deterministic` garante que as contas e chaves privadas sejam sempre as mesmas
 
-### Passo 2 — Deploy do contrato (novo terminal)
+### Passo 2 - Deploy do contrato (novo terminal)
 
 ```bash
 npm run deploy
@@ -118,7 +117,7 @@ Este script:
 Saída esperada:
 ```
 ╔══════════════════════════════════════════╗
-║         DEPLOY — EvidenceRegistry        ║
+║         DEPLOY - EvidenceRegistry        ║
 ╚══════════════════════════════════════════╝
 
 Deployer : 0x90F8bf6A479f320ead074411a4B0e7944Ea8c9C1
@@ -131,7 +130,7 @@ Contrato deployado em: 0x...
 Informações salvas em deployment.json
 ```
 
-### Passo 3 — Executar a demonstração
+### Passo 3 - Executar a demonstração
 
 ```bash
 npm run demo
@@ -140,11 +139,11 @@ npm run demo
 
 O script percorre **5 etapas** e imprime no terminal:
 
-1. **Conexão** — lista contas disponíveis no Ganache
-2. **Hash SHA-256** — gera a "impressão digital" de um arquivo fictício
-3. **Registro** — grava o hash na blockchain (transação assinada digitalmente)
-4. **Verificação** — consulta e compara os hashes (prova de integridade)
-5. **Adulteração** — modifica o arquivo e mostra que o hash não bate (efeito avalanche)
+1. **Conexão** - lista contas disponíveis no Ganache
+2. **Hash SHA-256** - gera a "impressão digital" de um arquivo fictício
+3. **Registro** - grava o hash na blockchain (transação assinada digitalmente)
+4. **Verificação** - consulta e compara os hashes (prova de integridade)
+5. **Adulteração** - modifica o arquivo e mostra que o hash não bate (efeito avalanche)
 
 ### Atalho (deploy + demo em sequência)
 
@@ -162,13 +161,3 @@ npm start
 | `deployment.json não encontrado` | Execute `npm run deploy` antes do `npm run demo` |
 | `Erro ao instalar solc` | Execute `sudo apt-get install build-essential python3` |
 | `node: command not found` | Instale o Node.js 18+ conforme instruções acima |
-
----
-
-## Referências Teóricas
-
-- **SHA-256**: FIPS PUB 180-4 — Secure Hash Standard (NIST)
-- **Assinaturas digitais em Ethereum**: ECDSA com curva secp256k1
-- **Imutabilidade em blockchain**: Nakamoto, S. (2008). *Bitcoin: A Peer-to-Peer Electronic Cash System*
-- **Smart contracts**: Wood, G. (2014). *Ethereum: A Secure Decentralised Generalised Transaction Ledger*
-- **Cadeia de custódia digital**: ISO/IEC 27037:2012 — Guidelines for identification, collection, acquisition and preservation of digital evidence
