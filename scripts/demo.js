@@ -8,6 +8,10 @@
  *   ETAPA 4 - Verificação: consulta prova que os dados não mudaram desde o registro
  *   ETAPA 5 - Adulteração: efeito avalanche do hash detecta qualquer alteração no conteúdo
  *
+ * Uso:
+ *   node scripts/demo.js                  → usa texto de exemplo interno
+ *   node scripts/demo.js caminho/arquivo  → usa qualquer arquivo real (jpg, pdf, mp4, docx...)
+ *
  * Pré-requisito: rodar `node scripts/deploy.js` antes desta demonstração.
  */
 
@@ -18,10 +22,18 @@ const path       = require('path');
 
 // ── Utilitários ───────────────────────────────────────────────────────────────
 
-// Calcula SHA-256 de qualquer string e retorna em hexadecimal (64 caracteres)
+// Calcula SHA-256 de uma string ou Buffer e retorna em hexadecimal (64 caracteres)
 // SHA-256 é uma função de hash criptográfico: determinística, one-way, resistente a colisões
+// Aceita string (texto) ou Buffer (bytes de qualquer arquivo binário)
 function sha256(content) {
-    return crypto.createHash('sha256').update(content, 'utf8').digest('hex');
+    return crypto.createHash('sha256').update(content).digest('hex');
+}
+
+// Formata tamanho em bytes para leitura humana
+function formatBytes(bytes) {
+    if (bytes < 1024) return `${bytes} bytes`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
 }
 
 function sep(char = '─', len = 60) {
@@ -98,15 +110,36 @@ async function main() {
     // ── ETAPA 2: GERAÇÃO DE HASH ──────────────────────────────────────────────
     titulo(2, 'GERAÇÃO DE HASH SHA-256 (INTEGRIDADE)');
 
-    // Simula o conteúdo de um arquivo de evidência digital
-    const fileContent = 'Laudo Pericial Nº 042/2026 - Evidência coletada em 2026-05-02.\n'
-                      + 'Dispositivo: smartphone modelo X, IMEI 35-209900-176148-1.\n'
-                      + 'Conteúdo integro e autenticado pelo perito João da Silva.';
+    // Se um caminho de arquivo foi passado como argumento, usa o arquivo real.
+    // Caso contrário, usa texto de exemplo — comportamento original.
+    const inputPath = process.argv[2] ? path.resolve(process.argv[2]) : null;
+    let fileContent;   // Buffer (arquivo real) ou string (exemplo interno)
+    let fileLabel;     // descrição para o terminal
+
+    if (inputPath) {
+        if (!fs.existsSync(inputPath)) {
+            console.error(`\nERRO: arquivo não encontrado: ${inputPath}\n`);
+            process.exit(1);
+        }
+        fileContent = fs.readFileSync(inputPath);   // Buffer — lê bytes brutos
+        const ext = path.extname(inputPath).toLowerCase() || '(sem extensão)';
+        fileLabel  = path.basename(inputPath);
+        console.log('\n  Arquivo fornecido:');
+        info('Nome',      fileLabel);
+        info('Tipo',      ext);
+        info('Tamanho',   formatBytes(fileContent.length));
+        info('Primeiros bytes (hex)', fileContent.slice(0, 8).toString('hex').match(/../g).join(' ') + ' …');
+    } else {
+        fileContent = 'Laudo Pericial Nº 042/2026 - Evidência coletada em 2026-05-02.\n'
+                    + 'Dispositivo: smartphone modelo X, IMEI 35-209900-176148-1.\n'
+                    + 'Conteúdo integro e autenticado pelo perito João da Silva.';
+        fileLabel = 'exemplo interno (texto)';
+        console.log('\n  Conteúdo do arquivo (simulado):');
+        fileContent.split('\n').forEach(l => console.log(`    "${l}"`));
+    }
 
     const fileHash = sha256(fileContent);
 
-    console.log('\n  Conteúdo do arquivo (simulado):');
-    fileContent.split('\n').forEach(l => console.log(`    "${l}"`));
     console.log();
     ok('SHA-256 calculado', fileHash);
     console.log('\n  Propriedades do hash SHA-256:');
@@ -114,11 +147,14 @@ async function main() {
     console.log('    · One-way          - impossível recuperar o original a partir do hash');
     console.log('    · Efeito avalanche - 1 bit diferente -> hash completamente diferente');
     console.log('    · Tamanho fixo     - sempre 256 bits / 64 caracteres hex');
+    console.log('    · Agnóstico ao tipo - funciona igual para texto, imagem, vídeo, PDF...');
 
     // ── ETAPA 3: REGISTRO NA BLOCKCHAIN ──────────────────────────────────────
     titulo(3, 'REGISTRO NA BLOCKCHAIN (ASSINATURA DIGITAL + IMUTABILIDADE)');
 
-    const description = 'Laudo Pericial 042/2026 - Smartphone coletado em flagrante';
+    const description = inputPath
+        ? `Evidência: ${path.basename(inputPath)} (${formatBytes(fileContent.length)})`
+        : 'Laudo Pericial 042/2026 - Smartphone coletado em flagrante';
 
     console.log('\n  Enviando transação para o contrato...');
 
@@ -168,17 +204,36 @@ async function main() {
     // ── ETAPA 5: TENTATIVA DE ADULTERAÇÃO ────────────────────────────────────
     titulo(5, 'TENTATIVA DE ADULTERAÇÃO - DETECTANDO VIOLAÇÃO DE INTEGRIDADE');
 
-    // Simula um atacante que tenta trocar o conteúdo do arquivo
-    const tamperedContent = 'Laudo Pericial Nº 042/2026 - Evidência coletada em 2026-05-02.\n'
-                          + 'Dispositivo: smartphone modelo X, IMEI 35-209900-176148-1.\n'
-                          + 'Conteúdo ALTERADO pelo acusado para encobrir o crime.';   // ← diferença
+    let tamperedContent;
+
+    if (inputPath) {
+        // Arquivo real: copia o Buffer e inverte os bits do primeiro byte.
+        // Um único byte diferente — isso é o mínimo possível de alteração.
+        tamperedContent = Buffer.from(fileContent);
+        tamperedContent[0] = tamperedContent[0] ^ 0xFF;   // XOR com 0xFF inverte todos os bits do byte
+
+        const byteName    = `byte[0]`;
+        const byteOriginal = fileContent[0].toString(16).padStart(2, '0').toUpperCase();
+        const byteAltered  = tamperedContent[0].toString(16).padStart(2, '0').toUpperCase();
+
+        console.log(`\n  Arquivo: ${path.basename(inputPath)}`);
+        console.log(`\n  Alteração simulada (mínima possível — 1 byte):`);
+        console.log(`    ${byteName} original  = 0x${byteOriginal}  (${fileContent[0]} em decimal)`);
+        console.log(`    ${byteName} adulterado = 0x${byteAltered}  (${tamperedContent[0]} em decimal)`);
+        console.log(`    Diferença    = 1 byte de ${formatBytes(fileContent.length)} total`);
+    } else {
+        // Texto interno: troca a última linha como antes
+        tamperedContent = 'Laudo Pericial Nº 042/2026 - Evidência coletada em 2026-05-02.\n'
+                        + 'Dispositivo: smartphone modelo X, IMEI 35-209900-176148-1.\n'
+                        + 'Conteúdo ALTERADO pelo acusado para encobrir o crime.';
+
+        console.log('\n  Arquivo ORIGINAL (última linha):');
+        console.log('    "…autenticado pelo perito João da Silva."');
+        console.log('\n  Arquivo ADULTERADO (última linha):');
+        console.log('    "…ALTERADO pelo acusado para encobrir o crime."');
+    }
 
     const tamperedHash = sha256(tamperedContent);
-
-    console.log('\n  Arquivo ORIGINAL (última linha):');
-    console.log('    "…autenticado pelo perito João da Silva."');
-    console.log('\n  Arquivo ADULTERADO (última linha):');
-    console.log('    "…ALTERADO pelo acusado para encobrir o crime."');
 
     console.log();
     ok('Hash original',     fileHash);
