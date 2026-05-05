@@ -134,7 +134,7 @@ Informações salvas em deployment.json
 
 ```bash
 npm run demo
-# ou: node scripts/demo.js
+# ou por exemplo: node scripts/demo.js "TP1a.pdf"
 ```
 
 O script percorre **5 etapas** e imprime no terminal:
