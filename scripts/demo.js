@@ -9,8 +9,8 @@
  *   ETAPA 5 - Adulteração: efeito avalanche do hash detecta qualquer alteração no conteúdo
  *
  * Uso:
- *   node scripts/demo.js                  → usa texto de exemplo interno
- *   node scripts/demo.js caminho/arquivo  → usa qualquer arquivo real (jpg, pdf, mp4, docx...)
+ *   node scripts/demo.js                  -> usa texto de exemplo interno
+ *   node scripts/demo.js caminho/arquivo  -> usa qualquer arquivo real (jpg, pdf, mp4, docx...)
  *
  * Pré-requisito: rodar `node scripts/deploy.js` antes desta demonstração.
  */
